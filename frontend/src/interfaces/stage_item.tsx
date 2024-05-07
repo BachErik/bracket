@@ -4,9 +4,10 @@ import { StageItemInput } from './stage_item_input';
 export interface StageItemWithRounds {
   id: number;
   tournament_id: number;
+  stage_id: number;
   created: string;
   type: string;
-  name: string;
+  name: 'SWISS' | 'ROUND_ROBIN' | 'SINGLE_ELIMINATION';
   type_name: string;
   team_count: number;
   is_active: boolean;

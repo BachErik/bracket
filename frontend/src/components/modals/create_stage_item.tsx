@@ -11,7 +11,7 @@ import { StageItemInputOption, formatStageItemInput } from '../../interfaces/sta
 import { Tournament } from '../../interfaces/tournament';
 import { getAvailableStageItemInputs } from '../../services/adapter';
 import { getStageItemLookup, getTeamsLookup } from '../../services/lookups';
-import { createStageItem } from '../../services/stage_item';
+import { createStageItem, getAvailableInputs } from '../../services/stage_item';
 import { responseIsValid } from '../utils/util';
 
 function TeamCountSelectElimination({ form }: { form: UseFormReturnType<any> }) {
@@ -56,13 +56,13 @@ function TeamCountInput({ form }: { form: UseFormReturnType<any> }) {
   return <TeamCountInputRoundRobin form={form} />;
 }
 
-function StageItemInput({
+export function StageItemInput({
   form,
   possibleOptions,
   index,
 }: {
   form: UseFormReturnType<any>;
-  index: number;
+  index: number | null;
   possibleOptions: any[];
 }) {
   const { t } = useTranslation();
@@ -70,12 +70,12 @@ function StageItemInput({
     <Select
       withAsterisk
       data={possibleOptions}
-      label={`${t('team_title')} ${index}`}
+      label={`${t('team_title')} ${index != null ? index : ''}`}
       placeholder={t('none')}
       searchable
       limit={20}
       mt={24}
-      {...form.getInputProps(`team_${index}`)}
+      {...form.getInputProps(`team_${index != null ? index : 0}`)}
     />
   );
 }
@@ -127,31 +127,7 @@ export function CreateStageItemModal({
   if (teamsMap == null || stageItemMap == null) {
     return null;
   }
-
-  const swrAvailableInputsResponse: SWRResponse = getAvailableStageItemInputs(
-    tournament.id,
-    stage.id
-  );
-  const availableInputs = responseIsValid(swrAvailableInputsResponse)
-    ? swrAvailableInputsResponse.data.data.map((option: StageItemInputOption) => {
-        if (option.winner_from_stage_item_id == null) {
-          if (option.team_id == null) return null;
-          const team = teamsMap[option.team_id];
-          if (team == null) return null;
-          return {
-            value: `${option.team_id}`,
-            label: team.name,
-          };
-        }
-        assert(option.winner_position != null);
-        const stageItem = stageItemMap[option.winner_from_stage_item_id];
-        if (stageItem == null) return null;
-        return {
-          value: `${option.winner_from_stage_item_id}_${option.winner_position}`,
-          label: `${formatStageItemInput(option.winner_position, stageItem.name)}`,
-        };
-      })
-    : {};
+  const availableInputs = getAvailableInputs(tournament, stage.id, teamsMap, stageItemMap);
 
   return (
     <>

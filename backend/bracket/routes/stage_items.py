@@ -15,7 +15,7 @@ from bracket.logic.subscriptions import check_requirement
 from bracket.models.db.stage_item import (
     StageItemActivateNextBody,
     StageItemCreateBody,
-    StageItemUpdateBody,
+    StageItemUpdateBody, StageType, StageItemAddInputBody,
 )
 from bracket.models.db.user import UserPublic
 from bracket.models.db.util import StageItemWithRounds
@@ -26,6 +26,7 @@ from bracket.routes.models import SuccessResponse
 from bracket.routes.util import stage_item_dependency
 from bracket.sql.rounds import set_round_active_or_draft
 from bracket.sql.shared import sql_delete_stage_item_with_foreign_keys
+from bracket.sql.stage_item_inputs import sql_create_stage_item_input
 from bracket.sql.stage_items import (
     get_stage_item,
     sql_create_stage_item,
@@ -90,12 +91,6 @@ async def update_stage_item(
     _: UserPublic = Depends(user_authenticated_for_tournament),
     stage_item: StageItemWithRounds = Depends(stage_item_dependency),
 ) -> SuccessResponse:
-    if await get_stage_item(tournament_id, stage_item_id) is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Could not find all stages",
-        )
-
     query = """
         UPDATE stage_items
         SET name = :name
@@ -105,6 +100,38 @@ async def update_stage_item(
         query=query,
         values={"stage_item_id": stage_item_id, "name": stage_item_body.name},
     )
+    return SuccessResponse()
+
+
+@router.post(
+    "/tournaments/{tournament_id}/stage_items/{stage_item_id}/add_input", response_model=SuccessResponse
+)
+async def add_input_to_stage_item(
+    tournament_id: TournamentId,
+    stage_item_id: StageItemId,
+    stage_item_body: StageItemAddInputBody,
+    _: UserPublic = Depends(user_authenticated_for_tournament),
+    stage_item: StageItemWithRounds = Depends(stage_item_dependency),
+) -> SuccessResponse:
+    if stage_item.type not in {StageType.ROUND_ROBIN, StageType.SWISS}:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot add teams to this type of stage item",
+        )
+
+    async with database.transaction():
+        await sql_create_stage_item_input(tournament_id, stage_item.id, stage_item_body.input)
+
+        query = """
+            UPDATE stage_items
+            SET team_count = team_count + 1
+            WHERE stage_items.id = :stage_item_id
+        """
+        await database.execute(
+            query=query,
+            values={"stage_item_id": stage_item_id},
+        )
+
     return SuccessResponse()
 
 

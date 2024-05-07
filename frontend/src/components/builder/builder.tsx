@@ -1,5 +1,5 @@
-import { ActionIcon, Badge, Card, Group, Menu, Stack, Text, rem } from '@mantine/core';
-import { IconDots, IconPencil, IconTrash } from '@tabler/icons-react';
+import { ActionIcon, Badge, Button, Card, Group, Menu, Stack, Text, rem } from '@mantine/core';
+import { IconDots, IconPencil, IconTrash, IconUserPlus, IconUsersPlus } from '@tabler/icons-react';
 import assert from 'assert';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
@@ -16,6 +16,7 @@ import { getStageItemLookup, getTeamsLookup } from '../../services/lookups';
 import { deleteStage } from '../../services/stage';
 import { deleteStageItem } from '../../services/stage_item';
 import CreateStageButton from '../buttons/create_stage';
+import { AddInputToStageItemModal } from '../modals/add_input_to_stage_item';
 import { CreateStageItemModal } from '../modals/create_stage_item';
 import { UpdateStageModal } from '../modals/update_stage';
 import { UpdateStageItemModal } from '../modals/update_stage_item';
@@ -60,7 +61,8 @@ function StageItemRow({
 }) {
   const router = useRouter();
   const { t } = useTranslation();
-  const [opened, setOpened] = useState(false);
+  const [updateModalOpened, setUpdateModalOpenedOpened] = useState(false);
+  const [addItemModalOpened, setAddInputModalOpened] = useState(false);
   const stageItemsLookup = getStageItemLookup(swrStagesResponse);
 
   const inputs = stageItem.inputs
@@ -91,8 +93,15 @@ function StageItemRow({
             swrStagesResponse={swrStagesResponse}
             stageItem={stageItem}
             tournament={tournament}
-            opened={opened}
-            setOpened={setOpened}
+            opened={updateModalOpened}
+            setOpened={setUpdateModalOpenedOpened}
+          />
+          <AddInputToStageItemModal
+            swrStagesResponse={swrStagesResponse}
+            stageItem={stageItem}
+            tournament={tournament}
+            opened={addItemModalOpened}
+            setOpened={setAddInputModalOpened}
           />
           <Menu withinPortal position="bottom-end" shadow="sm">
             <Menu.Target>
@@ -105,11 +114,21 @@ function StageItemRow({
               <Menu.Item
                 leftSection={<IconPencil size={rem(14)} />}
                 onClick={() => {
-                  setOpened(true);
+                  setUpdateModalOpenedOpened(true);
                 }}
               >
                 {t('edit_name_button')}
               </Menu.Item>
+              {stageItem.type === 'SWISS' || stageItem.type === 'ROUND_ROBIN' ? (
+                <Menu.Item
+                  leftSection={<IconUsersPlus size={rem(14)} />}
+                  onClick={() => {
+                    setAddInputModalOpened(true);
+                  }}
+                >
+                  {t('add_team_button')}
+                </Menu.Item>
+              ) : null}
               {stageItem.type === 'SWISS' ? (
                 <Menu.Item
                   leftSection={<BiSolidWrench size={rem(14)} />}
