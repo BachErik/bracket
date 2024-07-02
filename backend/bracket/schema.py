@@ -49,6 +49,7 @@ stage_items = Table(
     Column("created", DateTimeTZ, nullable=False, server_default=func.now()),
     Column("stage_id", BigInteger, ForeignKey("stages.id"), index=True, nullable=False),
     Column("team_count", Integer, nullable=False),
+    Column("ranking_id", BigInteger, ForeignKey("rankings.id"), nullable=False),
     Column(
         "type",
         Enum(

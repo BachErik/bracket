@@ -11,8 +11,8 @@ async def sql_create_stage_item(
 ) -> StageItem:
     async with database.transaction():
         query = """
-            INSERT INTO stage_items (type, stage_id, name, team_count)
-            VALUES (:stage_item_type, :stage_id, :name, :team_count)
+            INSERT INTO stage_items (type, stage_id, name, team_count, ranking_id)
+            VALUES (:stage_item_type, :stage_id, :name, :team_count, :ranking_id)
             RETURNING *
             """
         result = await database.fetch_one(
@@ -22,6 +22,7 @@ async def sql_create_stage_item(
                 "stage_id": stage_item.stage_id,
                 "name": stage_item.get_name_or_default_name(),
                 "team_count": stage_item.team_count,
+                "ranking_id":
             },
         )
 

@@ -34,7 +34,7 @@ from bracket.schema import (
     users_x_clubs,
 )
 from bracket.utils.db import insert_generic
-from bracket.utils.dummy_records import DUMMY_CLUB, DUMMY_TOURNAMENT
+from bracket.utils.dummy_records import DUMMY_CLUB, DUMMY_RANKING1, DUMMY_TOURNAMENT
 from bracket.utils.id_types import TeamId
 from bracket.utils.types import BaseModelT, assert_some
 from tests.integration_tests.mocks import get_mock_token, get_mock_user
@@ -151,6 +151,9 @@ async def inserted_auth_context() -> AsyncIterator[AuthContext]:
         inserted_tournament(
             DUMMY_TOURNAMENT.model_copy(update={"club_id": club_inserted.id})
         ) as tournament_inserted,
+        inserted_ranking(
+            DUMMY_RANKING1.model_copy(update={"tournament_id": tournament_inserted.id})
+        ) as ranking_inserted,
         inserted_user_x_club(
             UserXClub(
                 user_id=user_inserted.id,
@@ -165,4 +168,5 @@ async def inserted_auth_context() -> AsyncIterator[AuthContext]:
             club=club_inserted,
             tournament=tournament_inserted,
             user_x_club=user_x_club_inserted,
+            ranking=ranking_inserted,
         )

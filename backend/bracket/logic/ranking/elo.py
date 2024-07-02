@@ -6,12 +6,14 @@ from typing import TypeVar
 from bracket.database import database
 from bracket.models.db.match import MatchWithDetailsDefinitive
 from bracket.models.db.players import START_ELO, PlayerStatistics
+from bracket.models.db.ranking import Ranking
 from bracket.models.db.util import StageItemWithRounds
 from bracket.schema import players, teams
 from bracket.sql.players import get_all_players_in_tournament, update_player_stats
-from bracket.sql.stages import get_full_tournament_details
+from bracket.sql.rankings import get_ranking_for_stage_item
+from bracket.sql.stage_items import get_stage_item
 from bracket.sql.teams import get_teams_in_tournament, update_team_stats
-from bracket.utils.id_types import PlayerId, TeamId, TournamentId
+from bracket.utils.id_types import PlayerId, StageItemId, TeamId, TournamentId
 from bracket.utils.types import assert_some
 
 K = 32
@@ -28,6 +30,7 @@ def set_statistics_for_player_or_team(
     team_or_player_id: TeamIdOrPlayerId,
     rating_team1_before: float,
     rating_team2_before: float,
+    ranking: Ranking,
 ) -> None:
     is_team1 = team_index == 0
     team_score = match.team1_score if is_team1 else match.team2_score
@@ -36,13 +39,13 @@ def set_statistics_for_player_or_team(
 
     if has_won:
         stats[team_or_player_id].wins += 1
-        swiss_score_diff = Decimal("1.00")
+        swiss_score_diff = ranking.win_points
     elif was_draw:
         stats[team_or_player_id].draws += 1
-        swiss_score_diff = Decimal("0.50")
+        swiss_score_diff = ranking.draw_points
     else:
         stats[team_or_player_id].losses += 1
-        swiss_score_diff = Decimal("0.00")
+        swiss_score_diff = ranking.loss_points
 
     stats[team_or_player_id].swiss_score += swiss_score_diff
 
@@ -51,14 +54,14 @@ def set_statistics_for_player_or_team(
     stats[team_or_player_id].elo_score += int(K * (swiss_score_diff - expected_score))
 
 
-def determine_ranking_for_stage_items(
-    stage_items: list[StageItemWithRounds],
+def determine_ranking_for_stage_item(
+    stage_item: StageItemWithRounds,
+    ranking: Ranking,
 ) -> tuple[defaultdict[PlayerId, PlayerStatistics], defaultdict[TeamId, PlayerStatistics]]:
     player_x_stats: defaultdict[PlayerId, PlayerStatistics] = defaultdict(PlayerStatistics)
     team_x_stats: defaultdict[TeamId, PlayerStatistics] = defaultdict(PlayerStatistics)
     matches = [
         match
-        for stage_item in stage_items
         for round_ in stage_item.rounds
         if not round_.is_draft
         for match in round_.matches
@@ -88,6 +91,7 @@ def determine_ranking_for_stage_items(
                     team.id,
                     rating_team1_before,
                     rating_team2_before,
+                    ranking,
                 )
 
             for player in team.players:
@@ -98,28 +102,36 @@ def determine_ranking_for_stage_items(
                     assert_some(player.id),
                     rating_team1_before,
                     rating_team2_before,
+                    ranking,
                 )
 
     return player_x_stats, team_x_stats
 
 
-def determine_team_ranking_for_stage_item(
+async def determine_team_ranking_for_stage_item(
     stage_item: StageItemWithRounds,
+    ranking: Ranking,
 ) -> list[tuple[TeamId, PlayerStatistics]]:
-    _, team_ranking = determine_ranking_for_stage_items([stage_item])
+    _, team_ranking = determine_ranking_for_stage_item(stage_item, ranking)
     return sorted(team_ranking.items(), key=lambda x: x[1].elo_score, reverse=True)
 
 
-async def recalculate_ranking_for_tournament_id(tournament_id: TournamentId) -> None:
-    stages = await get_full_tournament_details(tournament_id)
-    stage_items = [stage_item for stage in stages for stage_item in stage.stage_items]
-    await recalculate_ranking_for_stage_items(tournament_id, stage_items)
-
-
-async def recalculate_ranking_for_stage_items(
-    tournament_id: TournamentId, stage_items: list[StageItemWithRounds]
+async def recalculate_ranking_for_stage_item_id(
+    tournament_id: TournamentId,
+    stage_item_id: StageItemId,
 ) -> None:
-    elo_per_player, elo_per_team = determine_ranking_for_stage_items(stage_items)
+    stage_item = await get_stage_item(tournament_id, stage_item_id)
+    ranking = await get_ranking_for_stage_item(tournament_id, stage_item_id)
+    assert stage_item, "Stage item not found"
+    assert ranking, "Ranking not found"
+
+    determine_ranking_for_stage_item(assert_some(stage_item), assert_some(ranking))
+
+
+async def todo_recalculate_ranking_for_stage_items(
+    tournament_id: TournamentId, stage_item: StageItemWithRounds, ranking: Ranking
+) -> None:
+    elo_per_player, elo_per_team = determine_ranking_for_stage_item(stage_item, ranking)
 
     for player_id, statistics in elo_per_player.items():
         await update_player_stats(tournament_id, player_id, statistics)

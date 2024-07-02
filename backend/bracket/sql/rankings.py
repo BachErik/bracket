@@ -1,6 +1,6 @@
 from bracket.database import database
 from bracket.models.db.ranking import Ranking, RankingBody, RankingCreateBody
-from bracket.utils.id_types import RankingId, TournamentId
+from bracket.utils.id_types import RankingId, StageItemId, TournamentId
 
 
 async def get_all_rankings_in_tournament(tournament_id: TournamentId) -> list[Ranking]:
@@ -12,6 +12,21 @@ async def get_all_rankings_in_tournament(tournament_id: TournamentId) -> list[Ra
         """
     result = await database.fetch_all(query=query, values={"tournament_id": tournament_id})
     return [Ranking.model_validate(dict(x._mapping)) for x in result]
+
+
+async def get_ranking_for_stage_item(
+    tournament_id: TournamentId, stage_item_id: StageItemId
+) -> Ranking | None:
+    query = """
+        SELECT *
+        FROM rankings
+        WHERE rankings.tournament_id = :tournament_id
+        AND id = :stage_item_id
+        """
+    result = await database.fetch_one(
+        query=query, values={"tournament_id": tournament_id, "stage_item_id": stage_item_id}
+    )
+    return Ranking.model_validate(dict(result._mapping)) if result else None
 
 
 async def sql_update_ranking(

@@ -20,6 +20,7 @@ from bracket.utils.id_types import (
     ClubId,
     CourtId,
     PlayerId,
+    RankingId,
     RoundId,
     StageId,
     StageItemId,
@@ -68,6 +69,7 @@ DUMMY_STAGE2 = Stage(
 
 DUMMY_STAGE_ITEM1 = StageItemToInsert(
     stage_id=StageId(DB_PLACEHOLDER_ID),
+    ranking_id=RankingId(DB_PLACEHOLDER_ID),
     created=DUMMY_MOCK_TIME,
     type=StageType.ROUND_ROBIN,
     team_count=4,
@@ -76,6 +78,7 @@ DUMMY_STAGE_ITEM1 = StageItemToInsert(
 
 DUMMY_STAGE_ITEM2 = StageItemToInsert(
     stage_id=StageId(DB_PLACEHOLDER_ID),
+    ranking_id=RankingId(DB_PLACEHOLDER_ID),
     created=DUMMY_MOCK_TIME,
     type=StageType.ROUND_ROBIN,
     team_count=4,
@@ -84,6 +87,7 @@ DUMMY_STAGE_ITEM2 = StageItemToInsert(
 
 DUMMY_STAGE_ITEM3 = StageItemToInsert(
     stage_id=StageId(DB_PLACEHOLDER_ID),
+    ranking_id=RankingId(DB_PLACEHOLDER_ID),
     created=DUMMY_MOCK_TIME,
     type=StageType.SINGLE_ELIMINATION,
     team_count=4,

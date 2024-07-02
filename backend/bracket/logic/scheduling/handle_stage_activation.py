@@ -3,6 +3,7 @@ from bracket.logic.ranking.elo import (
 )
 from bracket.models.db.match import MatchWithDetails
 from bracket.sql.matches import sql_get_match, sql_update_team_ids_for_match
+from bracket.sql.rankings import get_ranking_for_stage_item
 from bracket.sql.stage_items import get_stage_item
 from bracket.sql.stages import get_full_tournament_details
 from bracket.utils.id_types import MatchId, StageId, StageItemId, TeamId, TournamentId
@@ -17,9 +18,12 @@ async def determine_team_id(
 ) -> TeamId | None:
     if winner_from_stage_item_id is not None and winner_position is not None:
         stage_item = await get_stage_item(tournament_id, winner_from_stage_item_id)
-        assert stage_item is not None
+        ranking = await get_ranking_for_stage_item(tournament_id, assert_some(stage_item).id)
 
-        team_ranking = determine_team_ranking_for_stage_item(stage_item)
+        team_ranking = await determine_team_ranking_for_stage_item(
+            assert_some(stage_item), assert_some(ranking)
+        )
+
         if len(team_ranking) >= winner_position:
             return team_ranking[winner_position - 1][0]
 
