@@ -4,7 +4,6 @@ import {
   IconBrackets,
   IconCalendarEvent,
   IconHome,
-  IconMilitaryRank,
   IconScoreboard,
   IconSearch,
   IconSettings,

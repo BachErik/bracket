@@ -27,7 +27,10 @@ export function UpdateStageItemModal({
 }) {
   const { t } = useTranslation();
   const form = useForm({
-    initialValues: { name: stageItem.name, ranking_id: rankings.filter((ranking) => ranking.position === 0)[0].id.toString() },
+    initialValues: {
+      name: stageItem.name,
+      ranking_id: rankings.filter((ranking) => ranking.position === 0)[0].id.toString(),
+    },
     validate: {},
   });
 

@@ -70,11 +70,11 @@ async def delete_match(
     _: UserPublic = Depends(user_authenticated_for_tournament),
     match: Match = Depends(match_dependency),
 ) -> SuccessResponse:
-    round = await get_round_by_id(tournament_id, match.round_id)
+    round_ = await get_round_by_id(tournament_id, match.round_id)
 
     await sql_delete_match(assert_some(match.id))
 
-    await recalculate_ranking_for_stage_item_id(tournament_id, assert_some(round).stage_item_id)
+    await recalculate_ranking_for_stage_item_id(tournament_id, assert_some(round_).stage_item_id)
     return SuccessResponse()
 
 
@@ -191,7 +191,7 @@ async def update_match_by_id(
 
     await sql_update_match(match_id, match_body, tournament)
 
-    round = await get_round_by_id(tournament_id, match.round_id)
-    await recalculate_ranking_for_stage_item_id(tournament_id, assert_some(round).stage_item_id)
+    round_ = await get_round_by_id(tournament_id, match.round_id)
+    await recalculate_ranking_for_stage_item_id(tournament_id, assert_some(round_).stage_item_id)
 
     return SuccessResponse()

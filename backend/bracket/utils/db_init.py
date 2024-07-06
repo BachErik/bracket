@@ -400,7 +400,7 @@ async def sql_create_dev_db() -> UserId:
                         tournament=tournament_details,
                     )
 
-    for _stage_item in {stage_item_1, stage_item_2, stage_item_3}:
+    for _stage_item in (stage_item_1, stage_item_2, stage_item_3):
         await recalculate_ranking_for_stage_item_id(tournament_id_1, _stage_item.id)
 
     return user_id_1

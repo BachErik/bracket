@@ -249,8 +249,8 @@ DUMMY_COURT2 = Court(
 
 DUMMY_RANKING1 = RankingInsertable(
     tournament_id=TournamentId(DB_PLACEHOLDER_ID),
-    win_points=Decimal("3.0"),
-    draw_points=Decimal("1.0"),
+    win_points=Decimal("1.0"),
+    draw_points=Decimal("0.5"),
     loss_points=Decimal("0.0"),
     position=0,
 )

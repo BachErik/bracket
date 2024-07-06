@@ -28,9 +28,6 @@ async def sql_delete_tournament_completely(tournament_id: TournamentId) -> None:
     stages = await get_full_tournament_details(tournament_id)
     await delete_tournament_logo(tournament_id)
 
-    for ranking in await get_all_rankings_in_tournament(tournament_id):
-        await sql_delete_ranking(tournament_id, ranking.id)
-
     for stage in stages:
         for stage_item in stage.stage_items:
             await sql_delete_stage_item_relations(stage_item.id)
@@ -40,6 +37,9 @@ async def sql_delete_tournament_completely(tournament_id: TournamentId) -> None:
             await sql_delete_stage_item(stage_item.id)
 
         await sql_delete_stage(tournament_id, assert_some(stage.id))
+
+    for ranking in await get_all_rankings_in_tournament(tournament_id):
+        await sql_delete_ranking(tournament_id, ranking.id)
 
     await sql_delete_players_of_tournament(tournament_id)
     await sql_delete_courts_of_tournament(tournament_id)

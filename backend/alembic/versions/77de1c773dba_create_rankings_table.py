@@ -5,6 +5,7 @@ Revises: 1961954c0320
 Create Date: 2024-06-29 14:13:18.278876
 
 """
+
 from typing import Any
 
 import sqlalchemy as sa
@@ -20,26 +21,34 @@ depends_on: str | None = None
 
 def add_missing_rankings(tournaments_without_ranking: list[Any]) -> None:
     for tournament in tournaments_without_ranking:
-        ranking_id = op.get_bind().execute(
-            sa.text(
-            """
+        ranking_id = (
+            op.get_bind()
+            .execute(
+                sa.text(
+                    """
             INSERT INTO rankings (tournament_id, position, win_points, draw_points, loss_points)
             VALUES (:tournament_id, 0, 1, 0.5, 0)
             RETURNING id
-            """),
-            tournament_id=tournament.id,
-        ).scalar_one()
-
-        op.get_bind().execute(sa.text(
             """
+                ),
+                tournament_id=tournament.id,
+            )
+            .scalar_one()
+        )
+
+        op.get_bind().execute(
+            sa.text(
+                """
             UPDATE stage_items
             SET ranking_id = :ranking_id
             WHERE stage_items.ranking_id IS NULL AND stage_items.stage_id IN (
                 SELECT id FROM stages
                 WHERE stages.tournament_id = :tournament_id
             )
-            """),
-            tournament_id=tournament.id, ranking_id=ranking_id,
+            """
+            ),
+            tournament_id=tournament.id,
+            ranking_id=ranking_id,
         )
 
 
@@ -64,18 +73,28 @@ def upgrade() -> None:
     op.create_index(op.f("ix_rankings_id"), "rankings", ["id"], unique=False)
     op.create_index(op.f("ix_rankings_tournament_id"), "rankings", ["tournament_id"], unique=False)
 
-    tournaments_without_ranking = op.get_bind().execute(
-        "SELECT * FROM tournaments WHERE ("
-        "SELECT NOT EXISTS (SELECT 1 FROM rankings WHERE rankings.tournament_id = tournaments.id)"
-        ")"
-    ).fetchall()
+    tournaments_without_ranking = (
+        op.get_bind()
+        .execute(
+            """
+            SELECT * FROM tournaments WHERE (
+                SELECT NOT EXISTS (
+                   SELECT 1 FROM rankings WHERE rankings.tournament_id = tournaments.id
+                )
+            )
+            """
+        )
+        .fetchall()
+    )
 
     op.add_column("stage_items", sa.Column("ranking_id", sa.BigInteger(), nullable=True))
 
     add_missing_rankings(tournaments_without_ranking)
 
     op.alter_column("stage_items", "ranking_id", nullable=False)
-    op.create_foreign_key("stage_items_x_rankings_id_fkey", "stage_items", "rankings", ["ranking_id"], ["id"])
+    op.create_foreign_key(
+        "stage_items_x_rankings_id_fkey", "stage_items", "rankings", ["ranking_id"], ["id"]
+    )
 
 
 def downgrade() -> None:

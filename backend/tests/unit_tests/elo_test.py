@@ -77,8 +77,8 @@ def test_elo_calculation() -> None:
         id=RankingId(-1),
         tournament_id=TournamentId(1),
         created=DUMMY_MOCK_TIME,
-        win_points=Decimal("3.0"),
-        draw_points=Decimal("1.0"),
+        win_points=Decimal("1.0"),
+        draw_points=Decimal("0.5"),
         loss_points=Decimal("0.0"),
         position=1,
     )

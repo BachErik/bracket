@@ -14,14 +14,28 @@ async def get_all_rankings_in_tournament(tournament_id: TournamentId) -> list[Ra
     return [Ranking.model_validate(dict(x._mapping)) for x in result]
 
 
-async def get_ranking_for_stage_item(
-    tournament_id: TournamentId, stage_item_id: StageItemId
-) -> Ranking | None:
+async def get_default_rankings_in_tournament(tournament_id: TournamentId) -> Ranking:
     query = """
         SELECT *
         FROM rankings
         WHERE rankings.tournament_id = :tournament_id
-        AND id = :stage_item_id
+        ORDER BY position
+        LIMIT 1
+        """
+    result = await database.fetch_one(query=query, values={"tournament_id": tournament_id})
+    assert result is not None, "No default ranking found"
+    return Ranking.model_validate(dict(result._mapping))
+
+
+async def get_ranking_for_stage_item(
+    tournament_id: TournamentId, stage_item_id: StageItemId
+) -> Ranking | None:
+    query = """
+        SELECT rankings.*
+        FROM rankings
+        JOIN stage_items ON stage_items.ranking_id = rankings.id
+        WHERE rankings.tournament_id = :tournament_id
+        AND stage_items.id = :stage_item_id
         """
     result = await database.fetch_one(
         query=query, values={"tournament_id": tournament_id, "stage_item_id": stage_item_id}
