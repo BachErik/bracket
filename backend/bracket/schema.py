@@ -78,6 +78,10 @@ stage_item_inputs = Table(
     Column("team_id", BigInteger, ForeignKey("teams.id"), nullable=True),
     Column("winner_from_stage_item_id", BigInteger, ForeignKey("stage_items.id"), nullable=True),
     Column("winner_position", Integer, nullable=True),
+    Column("points", Float, nullable=False, server_default="0"),
+    Column("wins", Integer, nullable=False, server_default="0"),
+    Column("draws", Integer, nullable=False, server_default="0"),
+    Column("losses", Integer, nullable=False, server_default="0"),
 )
 
 rounds = Table(

@@ -26,10 +26,10 @@ def add_missing_rankings(tournaments_without_ranking: list[Any]) -> None:
             .execute(
                 sa.text(
                     """
-            INSERT INTO rankings (tournament_id, position, win_points, draw_points, loss_points)
-            VALUES (:tournament_id, 0, 1, 0.5, 0)
-            RETURNING id
-            """
+                INSERT INTO rankings (tournament_id, position, win_points, draw_points, loss_points)
+                VALUES (:tournament_id, 0, 1, 0.5, 0)
+                RETURNING id
+                """
                 ),
                 tournament_id=tournament.id,
             )
@@ -96,8 +96,26 @@ def upgrade() -> None:
         "stage_items_x_rankings_id_fkey", "stage_items", "rankings", ["ranking_id"], ["id"]
     )
 
+    op.add_column(
+        "stage_item_inputs", sa.Column("points", sa.Float(), server_default="0", nullable=False)
+    )
+    op.add_column(
+        "stage_item_inputs", sa.Column("wins", sa.Integer(), server_default="0", nullable=False)
+    )
+    op.add_column(
+        "stage_item_inputs", sa.Column("draws", sa.Integer(), server_default="0", nullable=False)
+    )
+    op.add_column(
+        "stage_item_inputs", sa.Column("losses", sa.Integer(), server_default="0", nullable=False)
+    )
+
 
 def downgrade() -> None:
+    op.drop_column("stage_item_inputs", "losses")
+    op.drop_column("stage_item_inputs", "draws")
+    op.drop_column("stage_item_inputs", "wins")
+    op.drop_column("stage_item_inputs", "points")
+
     op.drop_constraint("stage_items_x_rankings_id_fkey", "stage_items", type_="foreignkey")
     op.drop_column("stage_items", "ranking_id")
     op.drop_index(op.f("ix_rankings_tournament_id"), table_name="rankings")
