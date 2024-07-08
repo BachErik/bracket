@@ -26,8 +26,15 @@ def add_missing_rankings(tournaments_without_ranking: list[Any]) -> None:
             .execute(
                 sa.text(
                     """
-                INSERT INTO rankings (tournament_id, position, win_points, draw_points, loss_points)
-                VALUES (:tournament_id, 0, 1, 0.5, 0)
+                INSERT INTO rankings (
+                    tournament_id,
+                    position,
+                    win_points,
+                    draw_points,
+                    loss_points,
+                    add_score_points
+                )
+                VALUES (:tournament_id, 0, 1, 0.5, 0, false)
                 RETURNING id
                 """
                 ),
@@ -64,6 +71,7 @@ def upgrade() -> None:
         sa.Column("win_points", sa.Float(), nullable=False),
         sa.Column("draw_points", sa.Float(), nullable=False),
         sa.Column("loss_points", sa.Float(), nullable=False),
+        sa.Column("add_score_points", sa.Boolean(), nullable=False),
         sa.ForeignKeyConstraint(
             ["tournament_id"],
             ["tournaments.id"],

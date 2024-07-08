@@ -32,6 +32,7 @@ async def test_rankings_endpoint(
                     "win_points": "1.0",
                     "draw_points": "0.5",
                     "loss_points": "0.0",
+                    "add_score_points": False,
                     "tournament_id": auth_context.tournament.id,
                 }
             ],
@@ -70,7 +71,13 @@ async def test_delete_ranking(
 async def test_update_ranking(
     startup_and_shutdown_uvicorn_server: None, auth_context: AuthContext
 ) -> None:
-    body = {"win_points": "7.5", "draw_points": "2.5", "loss_points": "6.0", "position": 42}
+    body = {
+        "win_points": "7.5",
+        "draw_points": "2.5",
+        "loss_points": "6.0",
+        "add_score_points": True,
+        "position": 42,
+    }
     async with inserted_team(
         DUMMY_TEAM1.model_copy(update={"tournament_id": auth_context.tournament.id})
     ):

@@ -47,6 +47,9 @@ def set_statistics_for_player_or_team(
         stats[team_or_player_id].losses += 1
         swiss_score_diff = ranking.loss_points
 
+    if ranking.add_score_points:
+        swiss_score_diff += match.team1_score if is_team1 else match.team2_score
+
     stats[team_or_player_id].swiss_score += swiss_score_diff
 
     rating_diff = (rating_team2_before - rating_team1_before) * (1 if is_team1 else -1)

@@ -51,7 +51,8 @@ async def sql_update_ranking(
         SET position = :position,
             win_points = :win_points,
             draw_points = :draw_points,
-            loss_points = :loss_points
+            loss_points = :loss_points,
+            add_score_points = :add_score_points
         WHERE rankings.tournament_id = :tournament_id
         AND rankings.id = :ranking_id
         """
@@ -63,6 +64,7 @@ async def sql_update_ranking(
             "win_points": float(ranking_body.win_points),
             "draw_points": float(ranking_body.draw_points),
             "loss_points": float(ranking_body.loss_points),
+            "add_score_points": ranking_body.add_score_points,
             "position": ranking_body.position,
         },
     )
@@ -81,8 +83,15 @@ async def sql_create_ranking(
 ) -> None:
     query = """
         INSERT INTO rankings
-        (tournament_id, position, win_points, draw_points, loss_points)
-        VALUES (:tournament_id, :position, :win_points, :draw_points, :loss_points)
+        (tournament_id, position, win_points, draw_points, loss_points, add_score_points)
+        VALUES (
+            :tournament_id,
+            :position,
+            :win_points,
+            :draw_points,
+            :loss_points,
+            :add_score_points
+        )
         """
 
     await database.execute(
@@ -92,6 +101,7 @@ async def sql_create_ranking(
             "win_points": float(ranking_body.win_points),
             "draw_points": float(ranking_body.draw_points),
             "loss_points": float(ranking_body.loss_points),
+            "add_score_points": ranking_body.add_score_points,
             "position": position,
         },
     )

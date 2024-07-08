@@ -119,6 +119,7 @@
     "logout_success_title": "Logout successful",
     "logout_title": "Logout",
     "loss_points_input_label": "Points for a loss",
+    "add_score_points_label": "Award points for match score",
     "lowercase_required": "Includes lowercase letter",
     "margin_minutes_choose_title": "Please choose a margin between matches",
     "match_duration_label": "Match duration (minutes)",

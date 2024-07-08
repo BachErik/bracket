@@ -5,5 +5,6 @@ export interface Ranking {
   win_points: number;
   draw_points: number;
   loss_points: number;
+  add_score_points: boolean;
   position: number;
 }

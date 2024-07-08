@@ -1,4 +1,4 @@
-import { Accordion, Badge, Button, Center, Container, NumberInput } from '@mantine/core';
+import { Accordion, Badge, Button, Center, Checkbox, Container, NumberInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -65,6 +65,7 @@ function EditRankingForm({
       win_points: ranking.win_points,
       draw_points: ranking.draw_points,
       loss_points: ranking.loss_points,
+      add_score_points: ranking.add_score_points,
       position: ranking.position,
     },
     validate: {},
@@ -80,6 +81,7 @@ function EditRankingForm({
           values.win_points,
           values.draw_points,
           values.loss_points,
+          values.add_score_points,
           values.position
         );
         await swrRankingsResponse.mutate();
@@ -114,6 +116,11 @@ function EditRankingForm({
             withAsterisk
             label={t('loss_points_input_label')}
             {...form.getInputProps('loss_points')}
+          />
+          <Checkbox
+            mt="lg"
+            label={t('add_score_points_label')}
+            {...form.getInputProps('add_score_points', { type: 'checkbox' })}
           />
           <Button fullWidth style={{ marginTop: 16 }} color="green" type="submit">
             {`${t('save_button')} ${rankingTitle}`}

@@ -252,5 +252,6 @@ DUMMY_RANKING1 = RankingInsertable(
     win_points=Decimal("1.0"),
     draw_points=Decimal("0.5"),
     loss_points=Decimal("0.0"),
+    add_score_points=False,
     position=0,
 )

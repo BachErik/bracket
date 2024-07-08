@@ -220,4 +220,5 @@ rankings = Table(
     Column("win_points", Float, nullable=False),
     Column("draw_points", Float, nullable=False),
     Column("loss_points", Float, nullable=False),
+    Column("add_score_points", Boolean, nullable=False),
 )
