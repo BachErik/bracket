@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from bracket.logic.ranking.elo import determine_ranking_for_stage_item
 from bracket.models.db.match import MatchWithDetailsDefinitive
-from bracket.models.db.players import PlayerStatistics
+from bracket.models.db.players import TeamStatistics
 from bracket.models.db.ranking import Ranking
 from bracket.models.db.team import FullTeamWithPlayers
 from bracket.models.db.util import RoundWithMatches, StageItemWithRounds
@@ -89,12 +89,7 @@ def test_elo_calculation() -> None:
         inputs=[],
         rounds=[round_],
     )
-    player_stats, team_stats = determine_ranking_for_stage_item(stage_item, ranking)
-    assert player_stats == {
-        1: PlayerStatistics(losses=1, elo_score=1184, swiss_score=Decimal("0.00")),
-        2: PlayerStatistics(wins=1, elo_score=1216, swiss_score=Decimal("1.00")),
-    }
-    assert team_stats == {
-        3: PlayerStatistics(losses=1, elo_score=1184, swiss_score=Decimal("0.00")),
-        4: PlayerStatistics(wins=1, elo_score=1216, swiss_score=Decimal("1.00")),
+    assert determine_ranking_for_stage_item(stage_item, ranking) == {
+        3: TeamStatistics(losses=1, points=Decimal("0.0")),
+        4: TeamStatistics(wins=1, points=Decimal("1.0")),
     }
