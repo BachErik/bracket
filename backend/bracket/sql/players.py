@@ -5,7 +5,7 @@ from heliclockter import datetime_utc
 
 from bracket.database import database
 from bracket.models.db.player import Player, PlayerBody, PlayerToInsert
-from bracket.models.db.players import START_ELO, TeamStatistics
+from bracket.models.db.players import START_ELO
 from bracket.schema import players
 from bracket.utils.id_types import PlayerId, TournamentId
 from bracket.utils.pagination import PaginationPlayers
