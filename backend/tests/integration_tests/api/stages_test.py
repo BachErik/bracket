@@ -201,4 +201,4 @@ async def test_get_rankings(
             HTTPMethod.GET, f"stages/{stage_inserted.id}/rankings", auth_context
         )
 
-    assert response == {'data': {f'{stage_item_inserted.id}': []}}
+    assert response == {"data": {f"{stage_item_inserted.id}": []}}
