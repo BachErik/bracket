@@ -1,5 +1,3 @@
-from typing import Any
-
 from bracket.logic.ranking.elo import (
     determine_team_ranking_for_stage_item,
 )
@@ -12,7 +10,7 @@ from bracket.sql.stages import get_full_tournament_details
 from bracket.utils.id_types import MatchId, StageId, StageItemId, TeamId, TournamentId
 from bracket.utils.types import assert_some
 
-StageItemXTeamRanking = dict[Any, list[tuple[TeamId, TeamStatistics]]]
+StageItemXTeamRanking = dict[StageItemId, list[tuple[TeamId, TeamStatistics]]]
 
 
 async def determine_team_id(
